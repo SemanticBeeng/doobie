@@ -103,7 +103,7 @@ lazy val core = project.in(file("core"))
       "org.scala-lang"    %  "scala-reflect"    % scalaVersion.value, // required for shapeless macros
       "org.scalaz"        %% "scalaz-core"      % "7.2.9",
       "org.scalaz"        %% "scalaz-effect"    % "7.2.9",
-      "org.scalaz.stream" %% "scalaz-stream"    % "0.8.6",
+      "org.scalaz.stream" %% "scalaz-stream"    % "0.8a",
       "com.chuusai"       %% "shapeless"        % "2.3.2",
       "com.h2database"    %  "h2"               % "1.3.170" % "test"
     )
