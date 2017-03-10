@@ -6,14 +6,15 @@ import OsgiKeys._
 lazy val buildSettings = Seq(
   organization := "org.tpolecat",
   licenses ++= Seq(("MIT", url("http://opensource.org/licenses/MIT"))),
-  scalaVersion := "2.11.7",
-  crossScalaVersions := Seq("2.10.5", scalaVersion.value)
+  scalaVersion := "2.11.8",
+  crossScalaVersions := Seq("2.10.6", scalaVersion.value, "2.12.0-M3")
 )
 
 lazy val commonSettings = Seq(
     scalacOptions ++= Seq(
       "-encoding", "UTF-8", // 2 args
       "-feature",
+      "-deprecation",
       "-language:existentials",
       "-language:higherKinds",
       "-language:implicitConversions",
@@ -158,7 +159,7 @@ lazy val example = project.in(file("example"))
   .settings(doobieSettings)
   .settings(libraryDependencies ++= Seq(
       "com.h2database" %  "h2"         % "1.3.170",
-      "org.scalacheck" %% "scalacheck" % "1.11.5" % "test"
+      "org.scalacheck" %% "scalacheck" % "1.13.0" % "test"
     )
   )
   .settings(scalacOptions += "-deprecation")
@@ -240,13 +241,33 @@ lazy val docs = project.in(file("doc"))
       }
     }
   )
-  .settings(libraryDependencies += "io.argonaut" %% "argonaut" % "6.1-M4")
+  .settings(docSkipScala212Settings)
   .dependsOn(core, postgres, specs2, hikari, h2)
 
 lazy val bench = project.in(file("bench"))
   .settings(doobieSettings)
   .settings(noPublishSettings)
   .dependsOn(core, postgres)
+
+
+// Workaround to avoid cyclic dependency
+// TODO remove after tut-core and argonaut for Scala 2.12 is released
+lazy val tuut = taskKey[Seq[(File, String)]]("Temporary task to conditionally skip tut")
+
+// Temporarily skip tut for Scala 2.12
+// TODO remove after tut-core and argonaut for Scala 2.12 is released
+lazy val docSkipScala212Settings = Seq(
+  libraryDependencies ++= {
+    if (scalaVersion.value startsWith "2.12") Nil
+    else Seq("io.argonaut" %% "argonaut" % "6.2-M1")
+  },
+  tuut := Def.taskDyn {
+    if (scalaVersion.value startsWith "2.12")
+      Def.task(Seq.empty[(File, String)])
+    else
+      Def.task(tut.value)
+  }.value
+)
 
 lazy val noPublishSettings = Seq(
   publish := (),
